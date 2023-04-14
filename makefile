@@ -23,7 +23,7 @@ all:
 	make setup_ssh IP=$$IP PUBKEY=$$PUBKEY; \
 	make setup_firewall IP=$$IP PORT=$$PORT; \
 	make install_docker; \
-	make configure_docker IP=$$IP PORT=$$PORT; \
+	# make configure_docker IP=$$IP PORT=$$PORT; \
 	echo "-----------------------------------------------------------------"
 	@echo "Docker server set up successfully on $$IP!"
 	@echo "Use the following command to connect to the Docker server:"
@@ -45,10 +45,10 @@ install_docker:
 	apt-get update
 	apt-get install -y docker-ce docker-ce-cli containerd.io
 
-configure_docker:
-	mkdir -p /etc/docker
-	openssl req -newkey rsa:4096 -nodes -sha256 -keyout /etc/docker/server-key.pem -out /etc/docker/server-csr.pem -subj '/CN=$(IP)'
-	openssl x509 -req -days 365 -in /etc/docker/server-csr.pem -signkey /etc/docker/server-key.pem -out /etc/docker/server-cert.pem
-	openssl genrsa -out /etc/docker/ca-key.pem 4096
-	openssl req -new -x509 -days 365 -key /etc/docker/ca-key.pem -out /etc/docker/ca.pem -subj '/CN=$(IP)'
-	printf '{\n  "hosts": ["tcp://0.0.0.0:$(PORT)", "unix:///var/run/docker.sock"],\n  "tls": true,\n  "tlscacert": "/etc/docker/ca.pem",\n  "tlscert": "/etc/docker/server-cert.pem",\n 
+# configure_docker:
+# 	mkdir -p /etc/docker
+# 	openssl req -newkey rsa:4096 -nodes -sha256 -keyout /etc/docker/server-key.pem -out /etc/docker/server-csr.pem -subj '/CN=$(IP)'
+# 	openssl x509 -req -days 365 -in /etc/docker/server-csr.pem -signkey /etc/docker/server-key.pem -out /etc/docker/server-cert.pem
+# 	openssl genrsa -out /etc/docker/ca-key.pem 4096
+# 	openssl req -new -x509 -days 365 -key /etc/docker/ca-key.pem -out /etc/docker/ca.pem -subj '/CN=$(IP)'
+# 	printf '{\n  "hosts": ["tcp://0.0.0.0:$(PORT)", "unix:///var/run/docker.sock"],\n  "tls": true,\n  "tlscacert": "/etc/docker/ca.pem",\n  "tlscert": "/etc/docker/server-cert.pem",\n 

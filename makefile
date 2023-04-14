@@ -22,8 +22,6 @@ all:
 	echo "Using public key: $$PUBKEY"; \
 	make setup_ssh IP=$$IP PUBKEY=$$PUBKEY; \
 	make setup_firewall IP=$$IP PORT=$$PORT; \
-	make install_docker; \
-	# make configure_docker IP=$$IP PORT=$$PORT; \
 	echo "-----------------------------------------------------------------"
 	@echo "Docker server set up successfully on $$IP!"
 	@echo "Use the following command to connect to the Docker server:"
@@ -37,13 +35,13 @@ setup_firewall:
 	ufw allow $(PORT)/tcp
 	ufw --force enable
 
-install_docker:
-	apt-get update
-	apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-	curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-	echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-	apt-get update
-	apt-get install -y docker-ce docker-ce-cli containerd.io
+# install_docker:
+# 	apt-get update
+# 	apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+# 	curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# 	echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+# 	apt-get update
+# 	apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # configure_docker:
 # 	mkdir -p /etc/docker

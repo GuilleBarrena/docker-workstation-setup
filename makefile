@@ -1,13 +1,33 @@
 # Makefile to set up a Docker server on a Debian-based workstation
-# Usage: make IP=<workstation IP> PORT=<Docker port> PUBKEY=<path to SSH public key>
+# Usage: make
 
-IP ?= localhost
+IP := 192.168.1.2
 PORT ?= 2375
-PUBKEY ?= ~/.ssh/id_rsa.pub
+PUBKEY ?= $(shell pwd)/id_rsa.pub
 
 .PHONY: all setup_ssh setup_firewall install_docker configure_docker
 
-all: setup_ssh setup_firewall install_docker configure_docker
+all:
+	@echo "-----------------------------------------------------------------"
+	@echo "Makefile to set up a Docker server on a Debian-based workstation"
+	@echo "-----------------------------------------------------------------"
+	@read -p "Enter workstation IP (default $(IP)): " ip; \
+	[ -n "$$ip" ] && IP=$$ip; \
+	echo "Using IP: $$IP"; \
+	read -p "Enter Docker port (default $(PORT)): " port; \
+	[ -n "$$port" ] && PORT=$$port; \
+	echo "Using port: $$PORT"; \
+	read -p "Enter path to SSH public key (default $(PUBKEY)): " pubkey; \
+	[ -n "$$pubkey" ] && PUBKEY=$$pubkey; \
+	echo "Using public key: $$PUBKEY"; \
+	make setup_ssh IP=$$IP PUBKEY=$$PUBKEY; \
+	make setup_firewall IP=$$IP PORT=$$PORT; \
+	make install_docker; \
+	make configure_docker IP=$$IP PORT=$$PORT; \
+	echo "-----------------------------------------------------------------"
+	@echo "Docker server set up successfully on $$IP!"
+	@echo "Use the following command to connect to the Docker server:"
+	@echo "ssh -i $(PUBKEY) root@$$IP"
 
 setup_ssh:
 	ssh-copy-id -i $(PUBKEY) root@$(IP)
@@ -31,5 +51,4 @@ configure_docker:
 	openssl x509 -req -days 365 -in /etc/docker/server-csr.pem -signkey /etc/docker/server-key.pem -out /etc/docker/server-cert.pem
 	openssl genrsa -out /etc/docker/ca-key.pem 4096
 	openssl req -new -x509 -days 365 -key /etc/docker/ca-key.pem -out /etc/docker/ca.pem -subj '/CN=$(IP)'
-	printf '{\n  "hosts": ["tcp://0.0.0.0:$(PORT)", "unix:///var/run/docker.sock"],\n  "tls": true,\n  "tlscacert": "/etc/docker/ca.pem",\n  "tlscert": "/etc/docker/server-cert.pem",\n  "tlskey": "/etc/docker/server-key.pem"\n}\n' > /etc/docker/daemon.json
-	systemctl restart docker
+	printf '{\n  "hosts": ["tcp://0.0.0.0:$(PORT)", "unix:///var/run/docker.sock"],\n  "tls": true,\n  "tlscacert": "/etc/docker/ca.pem",\n  "tlscert": "/etc/docker/server-cert.pem",\n 
